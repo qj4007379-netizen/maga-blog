@@ -1,64 +1,46 @@
-import conf from "../conf/conf";
-import { Client, Account, ID } from "appwrite";
+import { account } from "./index.js";
+import { ID } from "appwrite";
 
 class AuthService {
-  client = new Client();
-  account;
-
-  constructor() {
-    this.client
-      .setEndpoint(conf.appwriteUrl)
-      .setProject(conf.appwriteProjectId);
-
-    this.account = new Account(this.client);
-  }
-
-  // 🔹 Signup
+  // Create account
   async createAccount({ email, password, name }) {
     try {
-      const user = await this.account.create(
-        ID.unique(),
-        email,
-        password,
-        name
-      );
-
-      if (user) {
-        // auto login after signup
+      const userAccount = await account.create(ID.unique(), email, password, name);
+      if (userAccount) {
+        // Auto login after account creation
         return this.login({ email, password });
       }
-
-      return user;
+      return userAccount;
     } catch (error) {
       console.log("AuthService :: createAccount :: error", error);
       throw error;
     }
   }
 
-  // 🔹 Login
+  // Login
   async login({ email, password }) {
     try {
-      return await this.account.createEmailPasswordSession(email, password);
+      return await account.createEmailPasswordSession(email, password);
     } catch (error) {
       console.log("AuthService :: login :: error", error);
       throw error;
     }
   }
 
-  // 🔹 Get Current User (SAFE)
+  // Get Current User
   async getCurrentUser() {
     try {
-      return await this.account.get();
+      return await account.get();
     } catch (error) {
-      // user login nahi → normal case
-      return null;
+      console.log("AuthService :: getCurrentUser :: error", error);
     }
+    return null;
   }
 
-  // 🔹 Logout
+  // Logout
   async logout() {
     try {
-      await this.account.deleteSessions();
+      await account.deleteSession("current");
     } catch (error) {
       console.log("AuthService :: logout :: error", error);
     }

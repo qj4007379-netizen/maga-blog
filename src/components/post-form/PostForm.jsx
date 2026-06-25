@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Button, Input, RTE, Select } from "..";
 import appwriteService from "../../appwrite/config";
@@ -112,13 +112,7 @@ export default function PostForm({ post }) {
           {...register("image", { required: !post })}
         />
         {post && (
-          <div className="w-full mb-4">
-            <img
-              src={appwriteService.getFilePreview(post.featuredImage)}
-              alt={post.title}
-              className="rounded-lg"
-            />
-          </div>
+          <PreviewImage id={post.featuredImage} alt={post.title} />
         )}
         <Select
           options={["active", "inactive"]}
@@ -135,5 +129,27 @@ export default function PostForm({ post }) {
         </Button>
       </div>
     </form>
+  );
+}
+
+function PreviewImage({ id, alt }) {
+  const [preview, setPreview] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    if (id) {
+      import("../../appwrite/config")
+        .then((mod) => mod.default.getFilePreview(id))
+        .then((url) => mounted && setPreview(url))
+        .catch(() => {});
+    }
+    return () => (mounted = false);
+  }, [id]);
+
+  if (!preview) return null;
+  return (
+    <div className="w-full mb-4">
+      <img src={preview} alt={alt} className="rounded-lg" />
+    </div>
   );
 }

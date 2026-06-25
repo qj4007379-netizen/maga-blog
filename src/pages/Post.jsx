@@ -36,11 +36,7 @@ export default function Post() {
         <div className="py-8">
             <Container>
                 <div className="w-full flex justify-center mb-4 relative border rounded-xl p-2">
-                    <img
-                        src={appwriteService.getFilePreview(post.featuredImage)}
-                        alt={post.title}
-                        className="rounded-xl"
-                    />
+                    <AsyncImage id={post.featuredImage} alt={post.title} />
 
                     {isAuthor && (
                         <div className="absolute right-6 top-6">
@@ -64,4 +60,22 @@ export default function Post() {
             </Container>
         </div>
     ) : null;
+}
+
+function AsyncImage({ id, alt }) {
+    const [url, setUrl] = useState("");
+
+    useEffect(() => {
+        let mounted = true;
+        if (id) {
+            import("../appwrite/config")
+                .then((mod) => mod.default.getFilePreview(id))
+                .then((u) => mounted && setUrl(u))
+                .catch(() => {});
+        }
+        return () => (mounted = false);
+    }, [id]);
+
+    if (!url) return null;
+    return <img src={url} alt={alt} className="rounded-xl" />;
 }
