@@ -14,7 +14,9 @@ class Service {
       return await databases.createDocument(
         this.databaseId,
         this.collectionId,
-        slug ? slug : ID.unique(),
+        ID.unique(),
+        // slug ? slug : ID.unique(),
+
         {
           title,
           content,
